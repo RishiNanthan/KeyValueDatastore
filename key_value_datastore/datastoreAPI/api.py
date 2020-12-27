@@ -110,7 +110,7 @@ def read():
             return jsonify({
                 "success": True,
                 "error": None,
-                "data": data,
+                "value": data,
             })
         except Exception as e:
             return jsonify({
