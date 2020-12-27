@@ -64,8 +64,7 @@ def init():
         })
 
     # WRONG FILE
-    print(path.suffix)
-    if path.suffix != "json":
+    if path.suffix != ".json":
         return jsonify({
             "success": False,
             "error": "Wrong File Specified",
@@ -73,6 +72,15 @@ def init():
     
     # FILE EXISTS
     else:
+
+        # FILE ALREADY BEING USED
+        if str(path) in FILES_USED:
+            return jsonify({
+                "success": False,
+                "error": "File Already in Use",
+            })
+
+        # FILE AVAILABLE
         FILES_USED.add(str(path))
         user_id = ID_NO
         ID_NO += 1
@@ -90,7 +98,11 @@ def init():
 def close():
     global FILES_USED, CLIENTS
     client_id = int(request.args.get("client_id"))
-    print(client_id)
+    if client_id is None:
+        return jsonify({
+            "success": False,
+            "error": "No Client ID specified",
+        })
 
     if client_id not in CLIENTS.keys():
         return jsonify({
