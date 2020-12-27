@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from pathlib import Path
-
+from CRD_API import CRD
 
 ID_NO = 0
 CLIENTS = {}
@@ -33,10 +33,13 @@ def init():
         with path.open("x") as f:
             f.close()
         
+        with path.open("w") as f:
+            f.write("{}")
+        
         FILES_USED.add(str(path))
         user_id = ID_NO
         ID_NO += 1
-        CLIENTS[user_id] = str(path)
+        CLIENTS[user_id] = CRD(path)
         
         return jsonify({
             "success": True,
@@ -84,7 +87,7 @@ def init():
         FILES_USED.add(str(path))
         user_id = ID_NO
         ID_NO += 1
-        CLIENTS[user_id] = str(path)
+        CLIENTS[user_id] = CRD(path)
 
         return jsonify({
             "success": True,
@@ -92,23 +95,113 @@ def init():
             "client_id": user_id,
             "filename": str(path), 
         })
-        
+
+
+@app.route("/read")
+def read():
+    global CLIENTS
+    key = request.args.get("key")
+    client_id = int(request.args.get("client_id"))
+
+    if client_id in CLIENTS.keys():
+
+        try:
+            data = CLIENTS[client_id].read(key)
+            return jsonify({
+                "success": True,
+                "error": None,
+                "data": data,
+            })
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": str(e),
+            })
+
+    else:
+        return jsonify({
+            "success": False,
+            "error": "No such Client ID",
+        })
+
+
+@app.route("/write")
+def create():
+    global CLIENTS
+    key = request.args.get("key")
+    client_id = int(request.args.get("client_id"))
+    value = request.args.get("value")
+    timeToLive = int(request.args.get("time_to_live"))
+
+    if client_id in CLIENTS.keys():
+        try:
+            CLIENTS[client_id].write(key, value, timeToLive)
+            return jsonify({
+                "success": True,
+                "error": None,
+            })
+
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            })
+
+    else:
+        return jsonify({
+            "success": False,
+            "error": "No such Client ID",
+        })
+
+
+
+@app.route("/delete")
+def delete():
+    global CLIENTS
+    key = request.args.get("key")
+    client_id = int(request.args.get("client_id"))
+
+    if client_id in CLIENTS.keys():
+        try:
+            CLIENTS[client_id].delete(key)
+            return jsonify({
+                "success": True,
+                "error": None,
+            })
+
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            })
+
+    else:
+        return jsonify({
+            "success": False,
+            "error": "No such Client ID",
+        })
+
+
 
 @app.route("/close")
 def close():
     global FILES_USED, CLIENTS
     client_id = int(request.args.get("client_id"))
+
+    # CLIENT ID NOT SPECIFIED
     if client_id is None:
         return jsonify({
             "success": False,
             "error": "No Client ID specified",
         })
 
+    # NO SUCH CLIENT
     if client_id not in CLIENTS.keys():
         return jsonify({
             "success": False,
             "error": "No Such Client",
         })
+    
     else:
         file = CLIENTS[client_id]
         CLIENTS.pop(client_id)
