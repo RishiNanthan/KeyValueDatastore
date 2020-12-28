@@ -100,57 +100,82 @@ def init():
 @app.route("/read")
 def read():
     global CLIENTS
-    key = request.args.get("key")
-    client_id = int(request.args.get("client_id"))
+    try:
+        key = request.args.get("key")
+        client_id = int(request.args.get("client_id"))
 
-    if client_id in CLIENTS.keys():
+        # CLIENT AVAILABLE
+        if client_id in CLIENTS.keys():
 
-        try:
-            data = CLIENTS[client_id].read(key)
-            return jsonify({
-                "success": True,
-                "error": None,
-                "value": data,
-            })
-        except Exception as e:
+            # KEY AVAILABLE
+            try:
+                data = CLIENTS[client_id].read(key)
+                return jsonify({
+                    "success": True,
+                    "error": None,
+                    "value": data,
+                })
+            
+            # KEY NOT AVAILABLE OR TIME TO LIVE EXPIRED
+            except Exception as e:
+                return jsonify({
+                    "success": False,
+                    "error": str(e),
+                })
+
+        # CLIENT NOT AVAILABLE
+        else:
             return jsonify({
                 "success": False,
-                "error": str(e),
+                "error": "No such Client ID",
             })
 
-    else:
+    except Exception as e:
         return jsonify({
             "success": False,
-            "error": "No such Client ID",
+            "error": str(e)
         })
+
 
 
 @app.route("/write")
 def create():
     global CLIENTS
-    key = request.args.get("key")
-    client_id = int(request.args.get("client_id"))
-    value = request.args.get("value")
-    timeToLive = int(request.args.get("time_to_live"))
+    try:
+        key = request.args.get("key")
+        client_id = int(request.args.get("client_id"))
+        value = request.args.get("value")
+        timeToLive = int(request.args.get("time_to_live"))
 
-    if client_id in CLIENTS.keys():
-        try:
-            CLIENTS[client_id].write(key, value, timeToLive)
-            return jsonify({
-                "success": True,
-                "error": None,
-            })
+        # CLIENT AVAILABLE
+        if client_id in CLIENTS.keys():
+            
+            # NO SUCH KEY AVAILABLE
+            try:
+                CLIENTS[client_id].write(key, value, timeToLive)
+                return jsonify({
+                    "success": True,
+                    "error": None,
+                })
 
-        except Exception as e:
+            # KEY ALREADY PRESENT
+            except Exception as e:
+                return jsonify({
+                    "success": False,
+                    "error": str(e)
+                })
+
+        # CLIENT NOT AVAILABLE
+        else:
             return jsonify({
                 "success": False,
-                "error": str(e)
+                "error": "No such Client ID",
             })
 
-    else:
+    except Exception as e:
         return jsonify({
             "success": False,
-            "error": "No such Client ID",
+            "error": str(e)
         })
 
 
@@ -158,27 +183,40 @@ def create():
 @app.route("/delete")
 def delete():
     global CLIENTS
-    key = request.args.get("key")
-    client_id = int(request.args.get("client_id"))
+    
+    try:
+        key = request.args.get("key")
+        client_id = int(request.args.get("client_id"))
 
-    if client_id in CLIENTS.keys():
-        try:
-            CLIENTS[client_id].delete(key)
-            return jsonify({
-                "success": True,
-                "error": None,
-            })
+        # CLIENT AVAILABLE
+        if client_id in CLIENTS.keys():
 
-        except Exception as e:
+            # KEY AVAILABLE
+            try:
+                CLIENTS[client_id].delete(key)
+                return jsonify({
+                    "success": True,
+                    "error": None,
+                })
+
+            # KEY NOT AVAILABLE
+            except Exception as e:
+                return jsonify({
+                    "success": False,
+                    "error": str(e)
+                })
+
+        # CLIENT NOT AVAILABLE
+        else:
             return jsonify({
                 "success": False,
-                "error": str(e)
+                "error": "No such Client ID",
             })
 
-    else:
+    except Exception as e:
         return jsonify({
             "success": False,
-            "error": "No such Client ID",
+            "error": str(e)
         })
 
 
@@ -186,30 +224,33 @@ def delete():
 @app.route("/close")
 def close():
     global FILES_USED, CLIENTS
-    client_id = int(request.args.get("client_id"))
 
-    # CLIENT ID NOT SPECIFIED
-    if client_id is None:
+    try:
+        client_id = int(request.args.get("client_id"))
+
+        # NO SUCH CLIENT
+        if client_id not in CLIENTS.keys():
+            return jsonify({
+                "success": False,
+                "error": "No Such Client",
+            })
+        
+        # CLIENT AVAILABLE
+        else:
+            file = CLIENTS[client_id]
+            CLIENTS.pop(client_id)
+            FILES_USED.remove(str(file.path))
+            return jsonify({
+                "success": True,
+                "error": None,
+            })
+
+    except Exception as e:
         return jsonify({
             "success": False,
-            "error": "No Client ID specified",
+            "error": str(e)
         })
 
-    # NO SUCH CLIENT
-    if client_id not in CLIENTS.keys():
-        return jsonify({
-            "success": False,
-            "error": "No Such Client",
-        })
-    
-    else:
-        file = CLIENTS[client_id]
-        CLIENTS.pop(client_id)
-        FILES_USED.remove(file)
-        return jsonify({
-            "success": True,
-            "error": None,
-        })
 
 
 app.run()
