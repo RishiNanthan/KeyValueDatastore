@@ -1,9 +1,9 @@
 from pathlib import Path
 import json
 from .datahandler.FileHandler import DataStoreFileHandler
+from .CRD import CRD
 
-
-class LargeDataStore:
+class LargeDataStore(CRD):
 
     def __init__(self, filename: Path):
         self.file = filename
