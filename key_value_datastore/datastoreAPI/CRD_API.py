@@ -11,6 +11,7 @@ class CRD:
     def read(self, key: str) -> dict:
         if not isinstance(key, str) or len(key) > 32:
             raise Exception("Key must be 32 character of Type str")
+
         with self.path.open("r") as fp:
             json_data = json.load(fp)
 
@@ -24,8 +25,20 @@ class CRD:
         raise Exception("No such Key")
 
     def write(self, key: str, value: str, timeToLive=None):
-        filesize = self.path.stat().st_size
 
+        if not (isinstance(key, str) or len(key) <= 32):
+            raise Exception("Key must be 32 character of Type str")
+
+        if not isinstance(value, dict):
+            raise Exception("Value must be of Type dict")
+
+        if time_to_live is not None and not isinstance(time_to_live, int):
+            raise Exception("Time to live must be integer value denoting number of seconds")
+
+        if len(json.dumps(value)) > 16 * 1024:
+            raise Exception("Value can only have maximum size of 16KB")
+
+        filesize = self.path.stat().st_size
         if filesize > 1024 * 1024 * 1024:
             raise Exception("File size is more than 1GB. Cannot write any more data.")
         data = json.loads(value)
@@ -47,6 +60,10 @@ class CRD:
             raise Exception("Key already exists")
 
     def delete(self, key: str):
+        
+        if not (isinstance(key, str) or len(key) <= 32):
+            raise Exception("Key must be 32 character of Type str")
+        
         with self.path.open("r") as fp:
             file_data = json.load(fp)
 
