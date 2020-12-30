@@ -15,14 +15,14 @@ def decode(encoded: bytes):
 #  Used to store int so that changes don't affect the entire file 
 
 def get_8digit_hex(n: int):
-    s = hex(n)[2: ]
+    s = hex(n)[2:]
     if len(s) < 8:
-        s = (8-len(s)) * "0" + s
+        s = (8 - len(s)) * "0" + s
     return s
 
 
 class FileHandler:
-    
+
     def __init__(self, filepath):
         self.filepath = filepath
 
@@ -35,7 +35,6 @@ class FileHandler:
 
         return pointer
 
-
     def read_start_pointer(self):
         fp = open(self.filepath, "r")
         line = fp.readline().strip()
@@ -44,13 +43,12 @@ class FileHandler:
         start = json.loads(line)
         return start
 
-
     def create_data_file(self):
         with open(self.filepath, "x") as f:
             f.close()
-        
+
         fp = open(self.filepath, "rb+")
-        
+
         start_pointer = self.create_pointer(0, 0)
         start_pointer = json.dumps(start_pointer)
         start_pointer = start_pointer.encode("utf-8")
@@ -58,7 +56,6 @@ class FileHandler:
         fp.write(start_pointer)
         fp.write("\n".encode("utf-8"))
         fp.close()
-
 
     def get_keys(self):
         # Start Pointer is available in the first line of the file
@@ -68,7 +65,7 @@ class FileHandler:
         fp.close()
         start = json.loads(start)
 
-        if start["start"] == start["end"] == get_8digit_hex(0): # NULL POINTER
+        if start["start"] == start["end"] == get_8digit_hex(0):  # NULL POINTER
             return None
 
         # GET the key from using start and end value in the start pointer
@@ -77,7 +74,7 @@ class FileHandler:
             next_pointer = start
             fp = open(self.filepath, "rb")
 
-            while not next_pointer["start"] ==  next_pointer["end"] == get_8digit_hex(0):
+            while not next_pointer["start"] == next_pointer["end"] == get_8digit_hex(0):
                 key_start = int(next_pointer["start"], 16)
                 key_end = int(next_pointer["end"], 16)
                 offset = key_end - key_start
@@ -87,11 +84,9 @@ class FileHandler:
                 key = json.loads(key)
                 keys.append(key)
                 next_pointer = key["next_key"]
-            
+
             fp.close()
             return keys
-
-
 
     def write_key_value(self, Key: str, Value: dict):
         keys = self.get_keys()
@@ -125,7 +120,7 @@ class FileHandler:
             start_pointer = self.create_pointer(key_start, key_end)
             start_pointer = json.dumps(start_pointer)
             start_pointer = start_pointer.encode("utf-8")
-            
+
             fp = open(self.filepath, "r+b")
             fp.write(start_pointer)
             fp.close()
@@ -134,7 +129,7 @@ class FileHandler:
             for key in keys:
                 if key["key"] == Key:
                     raise Exception("Key Already Exists.")
-            
+
             fp = open(self.filepath, "ab")
             value_start = fp.tell()
             fp.write(value)
@@ -165,7 +160,7 @@ class FileHandler:
 
                 fp = open(self.filepath, "r+b")
                 fp.seek(prev_key_start)
-                
+
                 prev_key = keys[-1]
                 prev_key["next_key"] = self.create_pointer(key_start, key_end)
                 prev_key = json.dumps(prev_key)
@@ -187,7 +182,6 @@ class FileHandler:
                 fp.write(prev_key)
                 fp.close()
 
-
     def read_value(self, Key: str):
         keys = self.get_keys()
         for key in keys:
@@ -200,14 +194,12 @@ class FileHandler:
                 value = fp.read(value_end - value_start)
                 fp.close()
 
-                value = value.decode("utf-8")
                 value = decode(value).decode("utf-8")
                 value = json.loads(value)
 
                 return value
 
         raise Exception("Key not found")
-
 
     def delete_key(self, Key: str):
         keys = self.get_keys()
@@ -222,29 +214,29 @@ class FileHandler:
                     start_pointer = key["next_key"]
                     start_pointer = json.dumps(start_pointer)
                     start_pointer = start_pointer.encode("utf-8")
-                    
+
                     fp = open(self.filepath, "r+b")
                     fp.write(start_pointer)
                     fp.write("\n".encode("utf-8"))
                     fp.close()
-                
+
                 else:
-                    prev_pointer = keys[i-1]
+                    prev_pointer = keys[i - 1]
                     prev_pointer["next_key"] = key["next_key"]
                     prev_pointer = json.dumps(prev_pointer)
                     prev_pointer = prev_pointer.encode("utf-8")
 
-                    if i-1 == 0:
+                    if i - 1 == 0:
                         start_pointer = self.read_start_pointer()
                         prev_pointer_start = int(start_pointer["start"], 16)
-                        
+
                         fp = open(self.filepath, "r+b")
                         fp.seek(prev_pointer_start)
                         fp.write(prev_pointer)
                         fp.close()
-                    
+
                     else:
-                        prev_pointer_start = int(keys[i-2]["next_key"]["start"], 16)
+                        prev_pointer_start = int(keys[i - 2]["next_key"]["start"], 16)
 
                         fp = open(self.filepath, "r+b")
                         fp.seek(prev_pointer_start)
@@ -252,9 +244,8 @@ class FileHandler:
                         fp.close()
 
                 return True
-        
-        raise Exception("No such Key Found")
 
+        raise Exception("No such Key Found")
 
 
 file_handler = FileHandler("sample.txt")

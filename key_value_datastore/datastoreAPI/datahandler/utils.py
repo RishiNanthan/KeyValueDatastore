@@ -1,5 +1,4 @@
 import base64
-import json
 
 
 def encode(string: str) -> bytes:
@@ -11,8 +10,7 @@ def decode(encoded: bytes) -> bytes:
 
 
 def get_hex(n: int):
-    s = hex(n)[2: ]
+    s = hex(n)[2:]
     if len(s) < 8:
-        s = (8-len(s)) * "0" + s
+        s = (8 - len(s)) * "0" + s
     return s
-

@@ -15,7 +15,7 @@ def index():
     return jsonify({
         "success": True,
         "error": None,
-    });
+    })
 
 
 @app.route("/init")
