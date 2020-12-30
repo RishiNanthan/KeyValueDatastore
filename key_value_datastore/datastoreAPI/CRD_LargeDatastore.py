@@ -3,9 +3,11 @@ import json
 from .datahandler.FileHandler import DataStoreFileHandler
 from .CRD import CRD
 
+
 class LargeDataStore(CRD):
 
     def __init__(self, filename: Path):
+        super().__init__()
         self.file = filename
         self.data_handler = DataStoreFileHandler(filename)
 

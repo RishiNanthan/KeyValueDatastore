@@ -5,8 +5,6 @@ from .client import Client
 ID_NO = 0
 CLIENTS = {}
 FILES_USED = set()
-
-
 app = Flask(__name__)
 
 
@@ -21,7 +19,6 @@ def index():
 # /init?filename="filepath" & datastore="large"/"small" -> GIVES CLIENT TOKEN in json 
 # returning json-format {"success": True, "error": None, "token": token}
 # if error returns {"success": False, "error": error}
-
 @app.route("/init")
 def init():
     global ID_NO, FILES_USED, CLIENTS
@@ -55,7 +52,7 @@ def init():
                     "error": "No Such File",
                 })
         # WRONG PATH FORMAT
-        except Exception as e:
+        except Exception:
             return jsonify({
                 "success": False,
                 "error": "Wrong Path Format",
@@ -118,7 +115,6 @@ def read():
         })
 
 
-
 @app.route("/write")
 def create():
     global CLIENTS
@@ -126,12 +122,12 @@ def create():
         key = request.args.get("key")
         token = request.args.get("token")
         value = request.args.get("value")
-        timeToLive = request.args.get("time_to_live")
-        timeToLive = int(timeToLive) if timeToLive is not None else None
+        time_to_live = request.args.get("time_to_live")
+        time_to_live = int(time_to_live) if time_to_live is not None else None
         # CLIENT TOKEN FOUND
         if token in CLIENTS.keys():
             try:
-                CLIENTS[token].create_key_value(key, value, timeToLive)
+                CLIENTS[token].create_key_value(key, value, time_to_live)
                 return jsonify({
                     "success": True,
                     "error": None,
@@ -156,11 +152,9 @@ def create():
         })
 
 
-
 @app.route("/delete")
 def delete():
     global CLIENTS
-    
     try:
         key = request.args.get("key")
         token = request.args.get("token")
@@ -191,7 +185,6 @@ def delete():
             "success": False,
             "error": str(e)
         })
-
 
 
 @app.route("/close")

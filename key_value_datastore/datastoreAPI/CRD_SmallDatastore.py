@@ -3,9 +3,11 @@ from pathlib import Path
 import time
 from .CRD import CRD
 
+
 class SmallDataStore(CRD):
 
     def __init__(self, filepath: Path):
+        super().__init__()
         self.path = filepath
         self.data = {}
         if not self.path.exists():
@@ -18,7 +20,6 @@ class SmallDataStore(CRD):
             with self.path.open("r") as fp:
                 self.data = json.load(fp)
                 fp.close()
-
 
     def read_value(self, key: str) -> dict:
         if not isinstance(key, str) or len(key) > 32:
@@ -36,7 +37,7 @@ class SmallDataStore(CRD):
 
         raise Exception("No such Key")
 
-    def create_key_value(self, key: str, value: str, timeToLive=None):
+    def create_key_value(self, key: str, value: str, time_to_live=None):
 
         if not (isinstance(key, str) or len(key) <= 32):
             raise Exception("Key must be 32 character of Type str")
@@ -60,7 +61,7 @@ class SmallDataStore(CRD):
 
         if key not in file_data.keys():
             file_data[key] = {
-                "timeToLive": None if timeToLive is None else int(time.time()) + timeToLive,
+                "timeToLive": None if time_to_live is None else int(time.time()) + time_to_live,
                 "data": data,
             }
             with self.path.open("w") as fp:
@@ -72,10 +73,10 @@ class SmallDataStore(CRD):
             raise Exception("Key already exists")
 
     def delete_key(self, key: str):
-        
+
         if not (isinstance(key, str) or len(key) <= 32):
             raise Exception("Key must be 32 character of Type str")
-        
+
         with self.path.open("r") as fp:
             file_data = json.load(fp)
 

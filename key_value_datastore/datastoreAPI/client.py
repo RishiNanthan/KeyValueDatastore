@@ -1,8 +1,9 @@
 from pathlib import Path
 from hashlib import sha1
-from .datahandler.utils import encode, decode
+from .datahandler.utils import encode
 from .CRD_SmallDatastore import SmallDataStore
 from .CRD_LargeDatastore import LargeDataStore
+
 
 class Client:
 
@@ -18,7 +19,7 @@ class Client:
         if self.client_token is not None:
             return self.client_token
 
-        string = f"{ self.client_id }: { str(self.filename) }"
+        string = f"{self.client_id}: {str(self.filename)}"
         h = sha1()
         h.update(string)
         token_bytes = h.digest()
