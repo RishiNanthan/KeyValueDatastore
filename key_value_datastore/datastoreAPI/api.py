@@ -16,7 +16,7 @@ def index():
     })
 
 
-# /init?filename="filepath" & datastore="large"/"small" -> GIVES CLIENT TOKEN in json 
+# GET /init?filename="filepath" & datastore="large"/"small" -> GIVES CLIENT TOKEN AND LOCKS THE DATASTORE FILE 
 # returning json-format {"success": True, "error": None, "token": token}
 # if error returns {"success": False, "error": error}
 @app.route("/init")
@@ -78,7 +78,9 @@ def init():
             "error": str(e),
         })
 
-
+# GET /read?key=key&token=token -> GIVES VALUE IN JSON FOR THE GIVEN KEY
+# json-format {"success": True, "error": None, "value": valuejson}
+# if error returns {"success": False, "error": error}
 @app.route("/read")
 def read():
     global CLIENTS
@@ -115,6 +117,9 @@ def read():
         })
 
 
+# GET /write?key=key&value={json:json}&token=token -> WRITES THE KEY-VALUE IN DATASTORE
+# json-format {"success": True, "error": None}
+# if error returns {"success": False, "error": error}
 @app.route("/write")
 def create():
     global CLIENTS
@@ -152,6 +157,9 @@ def create():
         })
 
 
+# GET /delete?key=key&token=token -> DELETES THE KEY-VALUE FROM DATASTORE
+# json-format {"success": True, "error": None}
+# if error returns {"success": False, "error": error}
 @app.route("/delete")
 def delete():
     global CLIENTS
@@ -187,6 +195,9 @@ def delete():
         })
 
 
+# GET /close?token=token -> CLOSES THE CLIENT AND UNLOCKS FILE FOR OTHER CLIENTS
+# json-format {"success": True, "error": None}
+# if error returns {"success": False, "error": error}
 @app.route("/close")
 def close():
     global FILES_USED, CLIENTS
