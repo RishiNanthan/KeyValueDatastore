@@ -18,31 +18,27 @@ class KeyValueDataStore:
             initialises the datastore. 
             Throws exception on failure.
         """
-        self.filename = None
-        self.__client_id = None
+        assert isinstance(filename, str) or filename is None
 
-        if filename is not None:
-            assert isinstance(filename, str)
-
+        self.filename = filename
+        self.__client_token = None
         try:
             requests.get(URL)
         except:
-            print("Running the API first")
+            print("Starting the API...")
             p = Path().cwd() / "key_value_datastore" / "datastoreAPI" / "api.py"
-            subprocess.Popen(f'python "{str(p)}"')
+            subprocess.Popen(f'python "{ str(p) }"')
 
         req = None
         if filename is None:
             req = requests.get(f"{URL}/init")
-
         else:
             req = requests.get(f"{ URL }/init?filename={ filename }")
 
         data = req.json()
         if data["success"]:
             self.filename = data["filename"]
-            self.__client_id = data["client_id"]
-
+            self.__client_token = data["token"]
         else:
             raise Exception(data["error"])
 
@@ -56,17 +52,13 @@ class KeyValueDataStore:
             Creates a key value pair in datastore if there is no such previous key, else throws error
 
         """
-
-        assert isinstance(key, str) and isinstance(value, dict)
-        if time_to_live is not None:
-            assert isinstance(time_to_live, int)
-
+        assert isinstance(key, str) and isinstance(value, dict) and (isinstance(time_to_live, int) or time_to_live is None)
         if len(key) > 32:
             raise Exception("Key size must be less than or equal to 32 characters")
 
         data = json.dumps(value)
         req = requests.get(
-            f"{URL}/write?client_id={self.__client_id}&key={key}&value={data}&time_to_live={time_to_live}")
+            f"{ URL }/write?token={ self.__client_token }&key={ key }&value={ data }&time_to_live={ time_to_live }")
         data = req.json()
 
         if not data["success"]:
@@ -82,18 +74,15 @@ class KeyValueDataStore:
             Returns dict containing the json value
 
         """
-
         assert isinstance(key, str)
-
         if len(key) > 32:
             raise Exception("Key size must be less than or equal to 32 characters")
 
-        req = requests.get(f"{ URL }/read?client_id={ self.__client_id }&key={ key }")
+        req = requests.get(f"{ URL }/read?token={ self.__client_token }&key={ key }")
         data = req.json()
 
         if not data["success"]:
             raise Exception(data["error"])
-
         return data["value"]
 
     def delete(self, key: str):
@@ -109,7 +98,7 @@ class KeyValueDataStore:
         if len(key) > 32:
             raise Exception("Key size must be less than or equal to 32 characters")
 
-        req = requests.get(f"{URL}/delete?client_id={self.__client_id}&key={key}")
+        req = requests.get(f"{ URL }/delete?token={ self.__client_token }&key={ key }")
         data = req.json()
 
         if not data["success"]:
@@ -117,11 +106,11 @@ class KeyValueDataStore:
         return True
 
     def close(self):
-        requests.get(f"{URL}/close?client_id={self.__client_id}")
+        requests.get(f"{ URL }/close?token={ self.__client_token }")
 
     def get_filename(self):
         """
-            Parameters: None
+            Parameters: None,
 
             Returns the filename
 
@@ -129,7 +118,7 @@ class KeyValueDataStore:
         return self.filename
 
     def __del__(self):
-        if self.__client_id is not None:
+        if self.__client_token is not None:
             try:
                 self.close()
             except:
