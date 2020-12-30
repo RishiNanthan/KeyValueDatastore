@@ -8,7 +8,7 @@ URL = "http://localhost:5000"
 
 class KeyValueDataStore:
 
-    def __init__(self, filename: str = None):
+    def __init__(self, filename: str = None, datastore_type: str=None):
         """
             Parameters:
             filename: str or None,
@@ -19,6 +19,7 @@ class KeyValueDataStore:
             Throws exception on failure.
         """
         assert isinstance(filename, str) or filename is None
+        assert (isinstance(datastore_type, str) and datastore_type in ("small", "large")) or datastore_type is None
 
         self.filename = filename
         self.__client_token = None
@@ -29,12 +30,13 @@ class KeyValueDataStore:
             p = Path().cwd() / "key_value_datastore" / "datastoreAPI" / "api.py"
             subprocess.Popen(f'python "{ str(p) }"')
 
-        req = None
-        if filename is None:
-            req = requests.get(f"{URL}/init")
-        else:
-            req = requests.get(f"{ URL }/init?filename={ filename }")
+        url = f"{ URL }/init"
+        if filename is not None:
+            url += f"?filename={ filename }"
+        if datastore_type is not None:
+            url += f"&datastore={ datastore_type }"
 
+        req = requests.get(url)
         data = req.json()
         if data["success"]:
             self.filename = data["filename"]
