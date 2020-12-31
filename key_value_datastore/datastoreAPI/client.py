@@ -1,6 +1,6 @@
 from pathlib import Path
 from hashlib import sha1
-from .datahandler.utils import encode
+from .datahandler.utils import encode, encode_bytes
 from .CRD_SmallDatastore import SmallDataStore
 from .CRD_LargeDatastore import LargeDataStore
 
@@ -19,11 +19,11 @@ class Client:
         if self.client_token is not None:
             return self.client_token
 
-        string = f"{self.client_id}: {str(self.filename)}"
+        string_bytes = f"{self.client_id}: {str(self.filename)}".encode("utf-8")
         h = sha1()
-        h.update(string)
+        h.update(string_bytes)
         token_bytes = h.digest()
-        self.client_token = encode(token_bytes).decode("utf-8")
+        self.client_token = encode_bytes(token_bytes).decode("utf-8")
         return self.client_token
 
     def read_value(self, key: str):

@@ -21,10 +21,8 @@ class LargeDataStore(CRD):
 
         if self.file.stat().st_size >= 1024 * 1024 * 1024:
             raise Exception("File size reached 1GB")
-
         if len(json.dumps(value)) > 16 * 1024:
             raise Exception("Value can only have maximum size of 16KB")
-
         return self.data_handler.write_key_value(key, value, time_to_live)
 
     def read_value(self, key: str):

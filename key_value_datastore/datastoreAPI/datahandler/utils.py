@@ -1,6 +1,10 @@
 import base64
 
 
+def encode_bytes(data) -> bytes:
+    return base64.b64encode(data)
+    
+
 def encode(string: str) -> bytes:
     return base64.b64encode(string.encode("utf-8"))
 

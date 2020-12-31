@@ -27,14 +27,16 @@ class KeyValueDataStore:
             requests.get(URL)
         except:
             print("Starting the API...")
-            p = Path().cwd() / "key_value_datastore" / "datastoreAPI" / "api.py"
+            p = Path().cwd() / "key_value_datastore" / "api.py"
             subprocess.Popen(f'python "{ str(p) }"')
 
         url = f"{ URL }/init"
-        if filename is not None:
-            url += f"?filename={ filename }"
-        if datastore_type is not None:
-            url += f"&datastore={ datastore_type }"
+        if filename is not None and datastore_type is not None:
+            url += f"?filename={ filename }&datastore={ datastore_type }"
+        elif datastore_type is not None and filename is None:
+            url += f"?datastore={ datastore_type }"
+        elif datastore_type is None and filename is not None:
+            url += f"filename={ filename }"
 
         req = requests.get(url)
         data = req.json()

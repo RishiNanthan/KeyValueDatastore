@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from pathlib import Path
-from .client import Client
+from datastoreAPI.client import Client
+import json
 
 ID_NO = 0
 CLIENTS = {}
@@ -25,16 +26,16 @@ def init():
     filename = request.args.get("filename")
     datastore_type = request.args.get("datastore")
     path = None
-    datastore_type = datastore_type if datastore_type is not None else "small"
+    datastore_type = datastore_type.strip() if datastore_type is not None else "small"
     # CHECK IF VALID DATASTORE TYPE GIVEN
-    if datastore_type != "large" or datastore_type != "small":
+    if not (datastore_type != "large" or datastore_type != "small"):
         return jsonify({
             "success": False,
             "error": " datastore can either be 'large' or 'small' ",
         })
     # FILE NOT SPECIFIED - CREATE NEW FILE PATH TO CREATE DATASTORE FILE
     if filename is None:
-        path = Path().cwd() / "key_value_datastore" / "datastoreAPI" / "datafiles"
+        path = Path().cwd() / "datastoreAPI" / "datafiles"
         files = list(path.iterdir())
 
         if datastore_type == "small":
@@ -77,6 +78,7 @@ def init():
             "success": False,
             "error": str(e),
         })
+
 
 # GET /read?key=key&token=token -> GIVES VALUE IN JSON FOR THE GIVEN KEY
 # json-format {"success": True, "error": None, "value": valuejson}
@@ -127,6 +129,7 @@ def create():
         key = request.args.get("key")
         token = request.args.get("token")
         value = request.args.get("value")
+        value = json.loads(value)
         time_to_live = request.args.get("time_to_live")
         time_to_live = int(time_to_live) if time_to_live is not None else None
         # CLIENT TOKEN FOUND
@@ -226,4 +229,4 @@ def close():
         })
 
 
-app.run()
+app.run(debug=True)
