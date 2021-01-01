@@ -3,6 +3,8 @@ from pathlib import Path
 from datastoreAPI.client import Client
 import json
 
+PORT = 5000
+
 ID_NO = 0
 CLIENTS = {}
 FILES_USED = set()
@@ -229,4 +231,4 @@ def close():
         })
 
 
-app.run()
+app.run(port=PORT)
