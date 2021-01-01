@@ -1,8 +1,8 @@
-from KeyValueDatastore import KeyValueDataStore
+from key_value_datastore.KeyValueDatastore import KeyValueDataStore
 
 filename = "D:\\Projects\\Current Projects\\Key Value Datastore\\key_value_datastore\\datastoreAPI\\datafiles\\1.datastore"  # Give filename if already created
 
-datastore = KeyValueDataStore(filename=None, datastore_type="large")
+datastore = KeyValueDataStore(filename=None, datastore_type="small")
 # Starts the API if not already running, creates file if not given 
 
 file = datastore.get_filename()

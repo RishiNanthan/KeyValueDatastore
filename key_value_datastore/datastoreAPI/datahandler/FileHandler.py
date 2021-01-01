@@ -16,7 +16,6 @@ class DataStoreFileHandler:
         self.file = filename
         self.start_pointer = None
         self.keys = None
-
         if not self.file.exists():
             fp = self.file.open("x")
             fp.close()
@@ -26,12 +25,14 @@ class DataStoreFileHandler:
             fp.write(start.get_bytes())
             fp.write("\n".encode("utf-8"))
             fp.close()
+            self.get_start()
+            self.get_all_keys()
         else:
             try:
                 self.get_start()
                 self.get_all_keys()
             except Exception:
-                raise Exception("No Start Pointer Found. Wrong File")
+                raise Exception("Wrong File or Wrong Datastore type")
 
     # Returns the start pointer for the keys
     def get_start(self) -> Pointer:
